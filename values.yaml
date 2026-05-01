@@ -1,0 +1,101 @@
+
+replicaCount: 1
+imagePullSecrets: []
+nameOverride: "cruduser"
+fullnameOverride: "cruduser"
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: true
+  name: nginx-ingress-root
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  hosts:
+    - host: arch.homework
+      paths:
+        - path: /
+          pathType: Prefix
+
+httpRoute:
+  enabled: false
+  annotations: {}
+  parentRefs:
+  - name: gateway
+    sectionName: http
+  hostnames:
+  - chart-example.local
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /headers
+
+resources:
+ limits:
+   cpu: 200m
+   memory: 700Mi
+ requests:
+   cpu: 100m
+   memory: 500Mi
+
+livenessProbe:
+  httpGet:
+    path: /actuator/health/liveness
+    port: 8080
+    initialDelaySeconds: 5
+    periodSeconds: 1
+readinessProbe:
+  httpGet:
+    path: /actuator/health/readiness
+    port: 8080
+    failureThreshold: 30
+    periodSeconds: 5
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+
+volumes: []
+  # - name: foo
+  #   secret:
+  #     secretName: mysecret
+  #     optional: false
+
+volumeMounts: []
+  # - name: foo
+  #   mountPath: "/etc/foo"
+  #   readOnly: true
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+deployment:
+  replicaCount: 3
+  containerPort: 8080
+  image:
+    repository: adelgalyameev/cruduser
+    pullPolicy: IfNotPresent
+    tag: 0.1
+
+
