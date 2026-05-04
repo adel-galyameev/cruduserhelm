@@ -37,6 +37,10 @@ Common labels
 app: {{ include "cruduserchart.chart" . }}
 {{- end }}
 
+{{- define "db.labels" -}}
+db: {{ .Values.statefulSet.name }}
+{{- end }}
+
 {{/*
 Selector labels
 */}}

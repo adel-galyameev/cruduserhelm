@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{- include "cruduserchart.name" . | indent 2 }}-config
+  labels:
+    {{- include "cruduserchart.labels" . | nindent 4 }}
+data:
+  DB_HOST_PORT: {{ .Values.config.dbHostPort | quote }}
+  DB_USER_NAME: {{ .Values.config.username | quote }}
+  SHOW_SQL: {{ .Values.config.showSql | quote }}

@@ -1,0 +1,164 @@
+{
+	"info": {
+		"_postman_id": "3ad44fee-8911-45b7-95b8-5e6bdd0fa155",
+		"name": "user_crud",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "25339338",
+		"_collection_link": "https://sbbol0.postman.co/workspace/sbbol~27cd9015-f91c-4308-8b6b-e8c558b29306/collection/25339338-3ad44fee-8911-45b7-95b8-5e6bdd0fa155?action=share&source=collection_link&creator=25339338"
+	},
+	"item": [
+		{
+			"name": "создать пользователя",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.collectionVariables.set(\"USER_ID\", pm.response.json().id);"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Alex\",\n    \"age\": 28\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BASE_HOST}}/users",
+					"host": [
+						"{{BASE_HOST}}"
+					],
+					"path": [
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "получить всех пользователей",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_HOST}}/users",
+					"host": [
+						"{{BASE_HOST}}"
+					],
+					"path": [
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "изменить пользователя",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Alex\",\n    \"age\": 28,\n    \"connectDate\": \"2025-04-04\",\n    \"disconnect\": null\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BASE_HOST}}/users/{{USER_ID}}",
+					"host": [
+						"{{BASE_HOST}}"
+					],
+					"path": [
+						"users",
+						"{{USER_ID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "получить пользователя по id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_HOST}}/users/{{USER_ID}}",
+					"host": [
+						"{{BASE_HOST}}"
+					],
+					"path": [
+						"users",
+						"{{USER_ID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "удалить пользователя",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_HOST}}/users/{{USER_ID}}",
+					"host": [
+						"{{BASE_HOST}}"
+					],
+					"path": [
+						"users",
+						"{{USER_ID}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "BASE_HOST",
+			"value": "http://arch.homework"
+		},
+		{
+			"key": "USER_ID",
+			"value": ""
+		}
+	]
+}

@@ -25,7 +25,7 @@ ingress:
   name: nginx-ingress-root
   className: nginx
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    # nginx.ingress.kubernetes.io/rewrite-target: /
   hosts:
     - host: arch.homework
       paths:
@@ -48,24 +48,25 @@ httpRoute:
 
 resources:
  limits:
-   cpu: 200m
+   cpu: 800m
    memory: 700Mi
  requests:
-   cpu: 100m
+   cpu: 500m
    memory: 500Mi
 
 livenessProbe:
   httpGet:
     path: /actuator/health/liveness
     port: 8080
-    initialDelaySeconds: 5
-    periodSeconds: 1
+  initialDelaySeconds: 60
+  periodSeconds: 5
 readinessProbe:
   httpGet:
     path: /actuator/health/readiness
     port: 8080
-    failureThreshold: 30
-    periodSeconds: 5
+  initialDelaySeconds: 30 
+  failureThreshold: 30
+  periodSeconds: 5
 
 autoscaling:
   enabled: false
@@ -91,11 +92,42 @@ tolerations: []
 affinity: {}
 
 deployment:
-  replicaCount: 3
+  replicaCount: 1
   containerPort: 8080
   image:
     repository: adelgalyameev/cruduser
     pullPolicy: IfNotPresent
     tag: 0.1
+
+config:
+  dbHostPort: postgresql-db-service.default.svc.cluster.local
+  username: user
+  showSql: true
+
+secret:
+  datasourcePassword: dXNlclBhc3N3b3Jk
+
+statefulSet:
+  name: postgresql-db
+  replicas: 1
+  containerPort: 5432
+  image:
+    repository: postgres
+    pullPolicy: IfNotPresent
+    tag: 13.3
+  resources:
+   limits:
+     cpu: 800m
+     memory: 2000Mi
+   requests:
+     cpu: 800m
+     memory: 1500Mi
+
+configDb:
+  username: user
+  db: user
+
+secretDb:
+  datasourcePassword: dXNlclBhc3N3b3Jk
 
 

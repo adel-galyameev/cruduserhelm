@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: "{{ .Values.statefulSet.name }}"
+  labels:
+    {{- include "db.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.statefulSet.replicas }}
+  selector:
+    matchLabels:
+      {{- include "db.labels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+      {{- include "db.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: "{{ .Values.statefulSet.name }}"
+          image: "{{ .Values.statefulSet.image.repository }}:{{ .Values.statefulSet.image.tag }}"
+          imagePullPolicy: "{{ .Values.statefulSet.image.pullPolicy }}"
+          ports:
+            - containerPort: {{ .Values.statefulSet.containerPort }}
+          envFrom:
+            - configMapRef:
+                name: "{{ .Values.statefulSet.name }}-config"
+            - secretRef:
+                name: "{{ .Values.statefulSet.name }}-secret"
+          {{- with .Values.statefulSet.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+
+  
