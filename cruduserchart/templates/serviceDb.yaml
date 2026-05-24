@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ .Values.statefulSet.name }}-service"
+  labels:
+    {{- include "db.labels" . | nindent 4 }}
+spec:
+  selector:
+    {{- include "db.labels" . | nindent 4 }}
+  type: LoadBalancer
+  ports:
+    - port: {{ .Values.statefulSet.containerPort }}
+      targetPort: {{ .Values.statefulSet.containerPort }}

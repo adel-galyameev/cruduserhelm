@@ -1,0 +1,216 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.grafana.name }}-dashboard-json
+  labels:
+    {{- include "cruduserchart.labels" . | nindent 4 }}
+data:
+  {{- $appName := include "cruduserchart.name" . }}
+  api-metrics.json: |
+    {
+      "title": "API Metrics",
+      "tags": ["spring", "usercrud"],
+      "timezone": "browser",
+      "schemaVersion": 36,
+      "panels": [
+        {
+          "title": "Latency (p50, p95, p99, max)",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.50, sum(rate(http_server_requests_seconds_bucket{uri!~\"/actuator.*\"}[1m])) by (le, uri, method))",
+              "legendFormat": "p50 {{ `{{` }}uri{{ `}}` }} {{ `{{` }}method{{ `}}` }}",
+              "refId": "A"
+            },
+            {
+              "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{uri!~\"/actuator.*\"}[1m])) by (le, uri, method))",
+              "legendFormat": "p95 {{ `{{` }}uri{{ `}}` }} {{ `{{` }}method{{ `}}` }}",
+              "refId": "B"
+            },
+            {
+              "expr": "histogram_quantile(0.99, sum(rate(http_server_requests_seconds_bucket{uri!~\"/actuator.*\"}[1m])) by (le, uri, method))",
+              "legendFormat": "p99 {{ `{{` }}uri{{ `}}` }} {{ `{{` }}method{{ `}}` }}",
+              "refId": "C"
+            },
+            {
+              "expr": "http_server_requests_seconds_max{uri!~\"/actuator.*\"}",
+              "legendFormat": "max {{ `{{` }}uri{{ `}}` }} {{ `{{` }}method{{ `}}` }}",
+              "refId": "D"
+            }
+          ],
+          "options": {"legend": {"displayMode": "table", "placement": "right"}},
+          "fieldConfig": {"defaults": {"unit": "s"}}
+        },
+        {
+          "title": "RPS by endpoint",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+          "targets": [
+            {
+              "expr": "sum(rate(http_server_requests_seconds_count{uri!~\"/actuator.*\"}[1m])) by (uri, method)",
+              "legendFormat": "{{ `{{` }}uri{{ `}}` }} {{ `{{` }}method{{ `}}` }}",
+              "refId": "A"
+            }
+          ],
+          "options": {"legend": {"displayMode": "table", "placement": "right"}},
+          "fieldConfig": {"defaults": {"unit": "rps"}}
+        },
+        {
+          "title": "Error Rate (5xx)",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+          "targets": [
+            {
+              "expr": "sum(rate(http_server_requests_seconds_count{status=~\"5..\"}[1m])) by (uri, method)",
+              "legendFormat": "{{ `{{` }}uri{{ `}}` }} {{ `{{` }}method{{ `}}` }}",
+              "refId": "A"
+            }
+          ],
+          "options": {"legend": {"displayMode": "table", "placement": "right"}},
+          "fieldConfig": {"defaults": {"unit": "rps"}}
+        },
+        {
+          "title": "nginx Latency (p50, p95, p99, max)",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24},
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.50, sum(rate(nginx_ingress_controller_request_duration_seconds_bucket{ingress=\"nginx-ingress-root\"}[1m])) by (le, host))",
+              "legendFormat": "p50 {{ `{{` }}host{{ `}}` }}",
+              "refId": "A"
+            },
+            {
+              "expr": "histogram_quantile(0.95, sum(rate(nginx_ingress_controller_request_duration_seconds_bucket{ingress=\"nginx-ingress-root\"}[1m])) by (le, host))",
+              "legendFormat": "p95 {{ `{{` }}host{{ `}}` }}",
+              "refId": "B"
+            },
+            {
+              "expr": "histogram_quantile(0.99, sum(rate(nginx_ingress_controller_request_duration_seconds_bucket{ingress=\"nginx-ingress-root\"}[1m])) by (le, host))",
+              "legendFormat": "p99 {{ `{{` }}host{{ `}}` }}",
+              "refId": "C"
+            },
+            {
+              "expr": "histogram_quantile(1.0, sum(rate(nginx_ingress_controller_request_duration_seconds_bucket{ingress=\"nginx-ingress-root\"}[1m])) by (le, host))",
+              "legendFormat": "max {{ `{{` }}host{{ `}}` }}",
+              "refId": "D"
+            }
+          ],
+          "options": {"legend": {"displayMode": "table", "placement": "right"}},
+          "fieldConfig": {"defaults": {"unit": "s"}}
+        },
+        {
+          "title": "nginx RPS",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 32},
+          "targets": [
+            {
+              "expr": "sum(rate(nginx_ingress_controller_requests{ingress=\"nginx-ingress-root\"}[1m])) by (host)",
+              "legendFormat": "{{ `{{` }}host{{ `}}` }}",
+              "refId": "A"
+            }
+          ],
+          "options": {"legend": {"displayMode": "table", "placement": "right"}},
+          "fieldConfig": {"defaults": {"unit": "rps"}}
+        },
+        {
+          "title": "nginx Error Rate (5xx)",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 40},
+          "targets": [
+            {
+              "expr": "sum(rate(nginx_ingress_controller_requests{ingress=\"nginx-ingress-root\", status=~\"5..\"}[1m])) by (host)",
+              "legendFormat": "{{ `{{` }}host{{ `}}` }}",
+              "refId": "A"
+            }
+          ],
+          "options": {"legend": {"displayMode": "table", "placement": "right"}},
+          "fieldConfig": {"defaults": {"unit": "rps"}}
+        },
+        {
+          "title": "Pod Memory Usage",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 48},
+          "targets": [
+            {
+              "expr": "container_memory_working_set_bytes{namespace=\"{{ .Release.Namespace }}\", pod=~\"{{ $appName }}-deployment.*\"}",
+              "legendFormat": "{{ `{{` }}pod{{ `}}` }}",
+              "refId": "A"
+            }
+          ],
+          "options": {"legend": {"displayMode": "table", "placement": "right"}},
+          "fieldConfig": {"defaults": {"unit": "bytes"}}
+        },
+        {
+          "title": "Pod CPU Usage",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 56},
+          "targets": [
+            {
+              "expr": "rate(container_cpu_usage_seconds_total{namespace=\"{{ .Release.Namespace }}\", pod=~\"{{ $appName }}-deployment.*\"}[1m])",
+              "legendFormat": "{{ `{{` }}pod{{ `}}` }}",
+              "refId": "A"
+            }
+          ],
+          "options": {"legend": {"displayMode": "table", "placement": "right"}},
+          "fieldConfig": {"defaults": {"unit": "cores"}}
+        },
+        {
+          "title": "DB Active Connections",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 64},
+          "targets": [
+            {
+              "expr": "pg_stat_database_numbackends{datname=\"{{ .Values.configDb.db }}\"}",
+              "legendFormat": "{{ `{{` }}datname{{ `}}` }}",
+              "refId": "A"
+            }
+          ],
+          "options": {"legend": {"displayMode": "table", "placement": "right"}},
+          "fieldConfig": {"defaults": {"unit": "none"}}
+        },
+        {
+          "title": "DB Transactions",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 72},
+          "targets": [
+            {
+              "expr": "rate(pg_stat_database_xact_commit{datname=\"{{ .Values.configDb.db }}\"}[1m])",
+              "legendFormat": "commit {{ `{{` }}datname{{ `}}` }}",
+              "refId": "A"
+            },
+            {
+              "expr": "rate(pg_stat_database_xact_rollback{datname=\"{{ .Values.configDb.db }}\"}[1m])",
+              "legendFormat": "rollback {{ `{{` }}datname{{ `}}` }}",
+              "refId": "B"
+            }
+          ],
+          "options": {"legend": {"displayMode": "table", "placement": "right"}},
+          "fieldConfig": {"defaults": {"unit": "rps"}}
+        },
+        {
+          "title": "DB Rows Activity",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 80},
+          "targets": [
+            {
+              "expr": "rate(pg_stat_database_tup_inserted{datname=\"{{ .Values.configDb.db }}\"}[1m])",
+              "legendFormat": "inserted",
+              "refId": "A"
+            },
+            {
+              "expr": "rate(pg_stat_database_tup_updated{datname=\"{{ .Values.configDb.db }}\"}[1m])",
+              "legendFormat": "updated",
+              "refId": "B"
+            },
+            {
+              "expr": "rate(pg_stat_database_tup_deleted{datname=\"{{ .Values.configDb.db }}\"}[1m])",
+              "legendFormat": "deleted",
+              "refId": "C"
+            }
+          ],
+          "options": {"legend": {"displayMode": "table", "placement": "right"}},
+          "fieldConfig": {"defaults": {"unit": "rps"}}
+        }
+      ]
+    }

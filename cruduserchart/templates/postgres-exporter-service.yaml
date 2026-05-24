@@ -1,0 +1,15 @@
+{{- if .Values.postgresExporter.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.postgresExporter.name }}
+  labels:
+    {{- include "cruduserchart.labels" . | nindent 4 }}
+spec:
+  ports:
+    - protocol: TCP
+      targetPort: {{ .Values.postgresExporter.containerPort }}
+      port: {{ .Values.postgresExporter.service.port }}
+  selector:
+    app: {{ .Values.postgresExporter.name }}
+{{- end }}

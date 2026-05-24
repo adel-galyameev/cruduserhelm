@@ -1,0 +1,167 @@
+
+replicaCount: 1
+imagePullSecrets: []
+nameOverride: "cruduser"
+fullnameOverride: "cruduser"
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: true
+  name: nginx-ingress-root
+  className: nginx
+  annotations:
+    # nginx.ingress.kubernetes.io/rewrite-target: /
+  hosts:
+    - host: arch.homework
+      paths:
+        - path: /
+          pathType: Prefix
+
+httpRoute:
+  enabled: false
+  annotations: {}
+  parentRefs:
+  - name: gateway
+    sectionName: http
+  hostnames:
+  - chart-example.local
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /headers
+
+resources:
+ limits:
+   cpu: 800m
+   memory: 700Mi
+ requests:
+   cpu: 500m
+   memory: 500Mi
+
+livenessProbe:
+  httpGet:
+    path: /actuator/health/liveness
+    port: 8080
+  initialDelaySeconds: 60
+  periodSeconds: 5
+readinessProbe:
+  httpGet:
+    path: /actuator/health/readiness
+    port: 8080
+  initialDelaySeconds: 30 
+  failureThreshold: 30
+  periodSeconds: 5
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+
+volumes: []
+  # - name: foo
+  #   secret:
+  #     secretName: mysecret
+  #     optional: false
+
+volumeMounts: []
+  # - name: foo
+  #   mountPath: "/etc/foo"
+  #   readOnly: true
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+deployment:
+  replicaCount: 1
+  containerPort: 8080
+  image:
+    repository: adelgalyameev/cruduser
+    pullPolicy: IfNotPresent
+    tag: 0.1
+
+config:
+  dbHostPort: postgresql-db-service.default.svc.cluster.local
+  username: user
+  showSql: true
+
+secret:
+  datasourcePassword: dXNlclBhc3N3b3Jk
+
+statefulSet:
+  name: postgresql-db
+  replicas: 1
+  containerPort: 5432
+  image:
+    repository: postgres
+    pullPolicy: IfNotPresent
+    tag: 13.3
+  resources:
+   limits:
+     cpu: 800m
+     memory: 2000Mi
+   requests:
+     cpu: 800m
+     memory: 1500Mi
+
+configDb:
+  username: user
+  db: user
+
+secretDb:
+  datasourcePassword: dXNlclBhc3N3b3Jk
+
+postgresExporter:
+  enabled: true
+  name: postgres-exporter
+  image:
+    repository: prometheuscommunity/postgres-exporter
+    tag: latest
+    pullPolicy: IfNotPresent
+  containerPort: 9187
+  service:
+    port: 9187
+
+prometheus:
+  enabled: true
+  name: prometheus
+  image:
+    repository: prom/prometheus
+    tag: latest
+    pullPolicy: IfNotPresent
+  containerPort: 9090
+  service:
+    port: 9090
+
+grafana:
+  enabled: true
+  name: grafana
+  image:
+    repository: grafana/grafana
+    tag: latest
+    pullPolicy: IfNotPresent
+  containerPort: 3000
+  service:
+    port: 3000
+  adminPassword: admin
+
+

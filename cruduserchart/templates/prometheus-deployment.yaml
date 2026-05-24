@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.prometheus.name }}-deployment
+  labels:
+    {{- include "cruduserchart.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.prometheus.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.prometheus.name }}
+    spec:
+      serviceAccountName: {{ .Values.prometheus.name }}-sa
+      containers:
+        - name: {{ .Values.prometheus.name }}
+          image: "{{ .Values.prometheus.image.repository }}:{{ .Values.prometheus.image.tag }}"
+          imagePullPolicy: {{ .Values.prometheus.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.prometheus.containerPort }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/prometheus
+      volumes:
+        - name: config
+          configMap:
+            name: {{ .Values.prometheus.name }}-config

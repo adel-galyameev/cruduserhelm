@@ -1,0 +1,76 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "cruduserchart.name" . }}-job-migation-db
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "10"
+    "helm.sh/hook-delete-policy": hook-succeeded 
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 300
+  template:
+    metadata:
+      labels:
+        {{- include "cruduserchart.labels" . | nindent 8 }}
+    spec:
+      restartPolicy: Never
+      initContainers:
+        - name: wait-for-postgres-up
+          image: "{{ .Values.statefulSet.image.repository }}:{{ .Values.statefulSet.image.tag }}-alpine"
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for postgres UP"
+              until pg_isready -h {{ .Values.statefulSet.name }}-service -p 5432 -U "$PGUSER"; do
+                echo "DB not ready, retrying in 3s..."
+                sleep 3
+              done
+              echo "PostgreSQL is ready!"
+          env:
+            - name: PGUSER
+              valueFrom:
+                configMapKeyRef:
+                  name: "{{ .Values.statefulSet.name }}-config"
+                  key: POSTGRES_USER
+      containers:
+        - name: run-sql
+          image: "{{ .Values.statefulSet.image.repository }}:{{ .Values.statefulSet.image.tag }}-alpine"
+          command: ['psql']
+          args:
+           - "-h"
+           - "{{ .Values.statefulSet.name }}-service"
+           - "-p"
+           - "5432"
+           - "-U"
+           - "$(PGUSER)"
+           - "-d"
+           - "$(PGDATABASE)"
+           - "-f"
+           - "/scripts/init.sql"
+          env:
+            - name: PGUSER
+              valueFrom:
+                configMapKeyRef:
+                  name: "{{ .Values.statefulSet.name }}-config"
+                  key: POSTGRES_USER
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.statefulSet.name }}-secret"
+                  key: POSTGRES_PASSWORD
+            - name: PGDATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: "{{ .Values.statefulSet.name }}-config"
+                  key: POSTGRES_db
+          volumeMounts:
+            - name: sql-scripts
+              mountPath: /scripts
+              readOnly: true
+      volumes:
+        - name: sql-scripts
+          configMap:
+            name: {{ include "cruduserchart.name" . }}-migation-db
+        
