@@ -1,0 +1,46 @@
+{{- if .Values.postgresExporter.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.postgresExporter.name }}
+  labels:
+    {{- include "cruduserchart.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.postgresExporter.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.postgresExporter.name }}
+    spec:
+      containers:
+        - name: {{ .Values.postgresExporter.name }}
+          image: "{{ .Values.postgresExporter.image.repository }}:{{ .Values.postgresExporter.image.tag }}"
+          imagePullPolicy: {{ .Values.postgresExporter.image.pullPolicy }}
+          command:
+            - sh
+            - -c
+            - "DATA_SOURCE_NAME=postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:{{ .Values.statefulSet.containerPort }}/$DB_NAME?sslmode=disable /bin/postgres_exporter"
+          ports:
+            - containerPort: {{ .Values.postgresExporter.containerPort }}
+          env:
+            - name: DB_HOST
+              value: "{{ .Values.statefulSet.name }}-service"
+            - name: DB_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: "{{ .Values.statefulSet.name }}-config"
+                  key: POSTGRES_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.statefulSet.name }}-secret"
+                  key: POSTGRES_PASSWORD
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: "{{ .Values.statefulSet.name }}-config"
+                  key: POSTGRES_db
+{{- end }}

@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{- include "cruduserchart.name" . | indent 2 }}-deployment
+  name: {{ include "cruduserchart.name" . }}-deployment
   labels:
     {{- include "cruduserchart.labels" . | nindent 4 }}
 spec:
@@ -22,16 +22,16 @@ spec:
         {{- end }}
     spec:
       containers:
-        - name: {{- include "cruduserchart.name" . | indent 2 }}
+        - name: {{ include "cruduserchart.name" . }}
           image: "{{ .Values.deployment.image.repository }}:{{ .Values.deployment.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.deployment.image.pullPolicy }}
           ports:
               - containerPort: {{ .Values.deployment.containerPort }}
           envFrom:
             - configMapRef:
-                name: {{- include "cruduserchart.name" . | indent 2 }}-config
+                name: {{ include "cruduserchart.name" . }}-config
             - secretRef:
-                name: {{- include "cruduserchart.name" . | indent 2 }}-secret
+                name: {{ include "cruduserchart.name" . }}-secret
           {{- with .Values.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}

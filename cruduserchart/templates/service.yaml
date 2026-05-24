@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{- include "cruduserchart.name" . | indent 2 }}-service
+  name: {{ include "cruduserchart.name" . }}-service
   labels:
     {{- include "cruduserchart.labels" . | nindent 4 }}
 spec:

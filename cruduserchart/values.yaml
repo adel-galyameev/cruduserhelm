@@ -130,4 +130,38 @@ configDb:
 secretDb:
   datasourcePassword: dXNlclBhc3N3b3Jk
 
+postgresExporter:
+  enabled: true
+  name: postgres-exporter
+  image:
+    repository: prometheuscommunity/postgres-exporter
+    tag: latest
+    pullPolicy: IfNotPresent
+  containerPort: 9187
+  service:
+    port: 9187
+
+prometheus:
+  enabled: true
+  name: prometheus
+  image:
+    repository: prom/prometheus
+    tag: latest
+    pullPolicy: IfNotPresent
+  containerPort: 9090
+  service:
+    port: 9090
+
+grafana:
+  enabled: true
+  name: grafana
+  image:
+    repository: grafana/grafana
+    tag: latest
+    pullPolicy: IfNotPresent
+  containerPort: 3000
+  service:
+    port: 3000
+  adminPassword: admin
+
 

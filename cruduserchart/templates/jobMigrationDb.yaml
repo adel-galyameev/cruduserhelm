@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{- include "cruduserchart.name" . | indent 2 }}-job-migation-db
+  name: {{ include "cruduserchart.name" . }}-job-migation-db
   annotations:
     "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-weight": "10"
@@ -72,5 +72,5 @@ spec:
       volumes:
         - name: sql-scripts
           configMap:
-            name: {{- include "cruduserchart.name" . | indent 2 }}-migation-db
+            name: {{ include "cruduserchart.name" . }}-migation-db
         
